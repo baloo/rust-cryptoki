@@ -63,6 +63,10 @@ impl MechanismType {
     pub const AES_KEY_WRAP_PAD: MechanismType = MechanismType {
         val: CKM_AES_KEY_WRAP_PAD,
     };
+    /// AES key wrap mechanism.  The CKM_AES_KEY_WRAP_KWP mechanism can wrap a key or encrypt block of data of any length.
+    pub const AES_KEY_WRAP_KWP: MechanismType = MechanismType {
+        val: CKM_AES_KEY_WRAP_KWP,
+    };
     /// AES-GCM mechanism
     pub const AES_GCM: MechanismType = MechanismType { val: CKM_AES_GCM };
 
@@ -609,6 +613,7 @@ impl MechanismType {
             }
             CKM_AES_KEY_WRAP => String::from(stringify!(CKM_AES_KEY_WRAP)),
             CKM_AES_KEY_WRAP_PAD => String::from(stringify!(CKM_AES_KEY_WRAP_PAD)),
+            CKM_AES_KEY_WRAP_KWP => String::from(stringify!(CKM_AES_KEY_WRAP_KWP)),
             CKM_RSA_PKCS_TPM_1_1 => String::from(stringify!(CKM_RSA_PKCS_TPM_1_1)),
             CKM_RSA_PKCS_OAEP_TPM_1_1 => String::from(stringify!(CKM_RSA_PKCS_OAEP_TPM_1_1)),
             CKM_EC_EDWARDS_KEY_PAIR_GEN => String::from(stringify!(CKM_EC_EDWARDS_KEY_PAIR_GEN)),
@@ -708,6 +713,8 @@ pub enum Mechanism<'a> {
     AesKeyWrap,
     /// AES key wrap with padding block
     AesKeyWrapPad,
+    /// AES key wrap with padding (CKM_AES_KEY_WRAP_KWP)
+    AesKeyWrapWithPadding(Option<[u8; 4]>),
     /// AES-GCM mechanism
     AesGcm(aead::GcmParams<'a>),
     /// AES-CBC-ENCRYPT-DATA mechanism
@@ -863,6 +870,7 @@ impl Mechanism<'_> {
             Mechanism::AesCbcPad(_) => MechanismType::AES_CBC_PAD,
             Mechanism::AesKeyWrap => MechanismType::AES_KEY_WRAP,
             Mechanism::AesKeyWrapPad => MechanismType::AES_KEY_WRAP_PAD,
+            Mechanism::AesKeyWrapWithPadding(_) => MechanismType::AES_KEY_WRAP_KWP,
             Mechanism::AesGcm(_) => MechanismType::AES_GCM,
             Mechanism::AesCbcEncryptData(_) => MechanismType::AES_CBC_ENCRYPT_DATA,
             Mechanism::AesCMac => MechanismType::AES_CMAC,
@@ -945,11 +953,13 @@ impl From<&Mechanism<'_>> for CK_MECHANISM {
             | Mechanism::Sha512RsaPkcsPss(params) => make_mechanism(mechanism, params),
             Mechanism::RsaPkcsOaep(params) => make_mechanism(mechanism, params),
             Mechanism::Ecdh1Derive(params) => make_mechanism(mechanism, params),
+            Mechanism::AesKeyWrapWithPadding(Some(params)) => make_mechanism(mechanism, params),
             // Mechanisms without parameters
             Mechanism::AesKeyGen
             | Mechanism::AesEcb
             | Mechanism::AesKeyWrap
             | Mechanism::AesKeyWrapPad
+            | Mechanism::AesKeyWrapWithPadding(None)
             | Mechanism::AesCMac
             | Mechanism::RsaPkcsKeyPairGen
             | Mechanism::RsaPkcs

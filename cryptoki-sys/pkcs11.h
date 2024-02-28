@@ -879,6 +879,7 @@ typedef unsigned long ck_mechanism_type_t;
 
 #define CKM_AES_KEY_WRAP		(0x2109UL)
 #define CKM_AES_KEY_WRAP_PAD		(0x210aUL)
+#define CKM_AES_KEY_WRAP_KWP		(0x210BUL)
 
 #define CKM_RSA_PKCS_TPM_1_1		(0x4001UL)
 #define CKM_RSA_PKCS_OAEP_TPM_1_1	(0x4002UL)
